@@ -8,9 +8,9 @@ public class Tester {
    public static void main(String[] args) 
    {
       Scanner scan = new Scanner(System.in);
-      int fieldExponent =  4;
+      int fieldExponent =  3;
       int numErrors = 2;
-      int supportSize = (int)(Math.pow(2, fieldExponent));
+      int supportSize = (int)(Math.pow(2, fieldExponent)) ;
       //int codeLength = 0;
       
       System.out.println("Using parameters:"
@@ -26,9 +26,9 @@ public class Tester {
      int[] encoded = Niederreiter.encode(toEncrypt, numErrors, supportSize);
      System.out.println("CW encoded: ");
      McEliece.print(encoded);
-     int[] niedEnc = Niederreiter.encrypt(encoded,Niederreiter.createParityCheck(fieldExponent,numErrors, supportSize));
-System.out.println("PC:");
-McEliece.print(Niederreiter.parityCheck);
+     int[] niedEnc = Niederreiter.encrypt(encoded,fieldExponent,numErrors, supportSize);
+//System.out.println("PC:");
+//McEliece.print(Niederreiter.parityCheck);
      
      System.out.println("Nied encrypt:");
      McEliece.print(niedEnc);
@@ -41,11 +41,6 @@ McEliece.print(Niederreiter.parityCheck);
      System.out.println("Support:");
      McEliece.print(Niederreiter.support);
 
-   System.out.println("permInv");
-   McEliece.print(McEliece.invert(Niederreiter.permutation));
-
-    
-     
      
       
     //int[] toEncrypt = McEliece.getRandomErrorVector(numErrors, supportSize);  

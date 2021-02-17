@@ -9,8 +9,8 @@ public class Demo
       Scanner scan = new Scanner(System.in);
       
       int fieldExponent =  5;
-      int numErrors = 3;
-      int supportSize = (int)(Math.pow(2, fieldExponent));
+      int numErrors = 1;
+      int supportSize = (int)(Math.pow(2, fieldExponent)) - 1;
       //int codeLength = 0;
       
       System.out.println("Using parameters:"
@@ -49,14 +49,8 @@ public class Demo
 
       System.out.println("Encrypted:");
       McEliece.print(encrypted);
-      //DECRYPTION
- 
 
-      int[] decrypted = McEliece.decrypt(encrypted, McEliece.parityCheck);
-      System.out.println("Message = Decrypted?");
-      System.out.println(McEliece.vecEquals(toEncrypt, decrypted));
-      
-      
+
       }
       
    

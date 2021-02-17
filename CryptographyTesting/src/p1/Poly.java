@@ -577,18 +577,13 @@ public class Poly
        
        getDegree(odd);
        Poly sqrtX = new Poly(new gfPoly[] {gfPoly.gfZero, gfPoly.gfOne});
-       System.out.println("fieldpoly: " + fieldPoly.toString());
        for(int i = 0; i < extDegree*mod.degree - 1; i++)
        {
-          System.out.println("before squaring: " + sqrtX.toString());
           sqrtX = toPower(sqrtX, fieldPoly, 2);
-          System.out.println("after squaring: " + sqrtX.toString());
           sqrtX = getRemainder(sqrtX, mod, fieldPoly);
-          System.out.println("after reducing mod: " + mod.toString() + " got " + sqrtX.toString());
 
 
        }
-       System.out.println("sqrt x? " + Poly.toPower(sqrtX, fieldPoly, 2));
 
 
        Poly sqrtEven = new Poly(poly.degree/2);

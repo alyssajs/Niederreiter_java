@@ -742,9 +742,6 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 	   }
 
 	   
-	   //multiply matrices and reduce each polynomial entry mod irredPoly
-	   //TODO: correct change? irredPoly -> gf.irredPoly
-	   //Poly[][] polyMatr = reduce(multiply(multiply(mat1, mat2), mat3), irredPoly);
       Poly[][] polyMatr = multiply(multiply(mat1, mat2), mat3);
       polyParity = polyMatr;
 
@@ -929,33 +926,6 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 	}
 	
 	
-	/*
-	 * 
-	 * 
-	 * DECRYPTION STUFF
-	 * 
-	 * 
-	 */
-	
-	//TODO: is this the right thing to do?
-	public static Poly getErrorLoc(int[] errorVector)
-	{
-	   Poly errorLoc = new Poly(Poly.onePoly, 0);
-	   Poly factor = new Poly();
-	   int weight = 0;
-      for(int i = 0; i < errorVector.length; i++)
-      {
-         if(errorVector[i] == 1)
-         {
-            weight++;
-            factor = Poly.add(Poly.xPoly, new Poly(support[i]));
-            errorLoc = Poly.multiply(errorLoc, factor, gF.gf_irredPoly);
-         }
-      }
-            
-	   return errorLoc;
-	}
-	
 	public static int[][] getTranspose(int[][] matrix)
 	{
 	   int[][] transpose = new int[matrix[0].length][matrix.length];
@@ -971,203 +941,7 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 	   return transpose;
 	}
 	
-	public static Poly getSyndrome(int[][] parityCheck, int[] codeWord)
-	{
-	   Poly syndrome = new Poly();
-	   Poly newFact;
-//if code word vector is 1, then add the factor	 
-      for(int parityCol = 0; parityCol < polyParity[0].length; parityCol++)
-      {
-         if(codeWord[parityCol] == 1)
-         {
-            for(int parityRow = 0; parityRow < polyParity.length; parityRow++)
-            {
 
-  
-               newFact = Poly.toPower(Poly.xPoly, gF.gf_irredPoly, polyParity.length - parityRow - 1);
-               newFact = Poly.multiply(newFact, polyParity[parityRow][parityCol], gF.gf_irredPoly);
-               syndrome = syndrome.add(syndrome, newFact);
-            }
-         } 
-         
-      }
-	   return syndrome;
-	   
-	}
-	
-	public static int[] decrypt(int[] codeWord, int[][] parityCheck)
-	{
-	   int[][] permInverse = invert(permutation);
-	   
-	   int[][] codeTemp = new int[1][codeWord.length];
-      codeTemp[0] = codeWord;
-      //multiply by permInverse or perm?
-      codeTemp = multiply(codeTemp, permInverse);
-      
-      codeWord = codeTemp[0];
-      
-      return pattersonDecode(codeWord, parityCheck);
-      
-	}
-	
-	
-	public static int[] pattersonDecode(int[] codeWord, int[][] parityCheck)
-	{
-      /*
-      //Multiply ciphertext by inverse of permutation matrix
-      int[][] permInverse = invert(permutation);
-
-     
-      int[][] codeTemp = new int[1][codeWord.length];
-      codeTemp[0] = codeWord;
-      //multiply by permInverse or perm?
-      codeTemp = multiply(codeTemp, permInverse);
-
-      codeWord = codeTemp[0];
-      */
- 	   int[] decoded = new int[genMatrix.length];
-	
-	   //Multiply ciphertext by parity check matrix to get syndrome polynomial
-	   Poly syndrome = getSyndrome(parityCheck, codeWord);
-//System.out.println("Syndrome: " + syndrome.toString());	   
-	   Poly altSyndrome = altSyndrome(codeWord);
-	   //System.out.println("Goppa is: " + irredPoly.toString());
-	   
-	   //Invert syndrome polynomial mod goppa polynomial 
-	   //TODO: different inverse?
-	   Poly synInverse = Poly.getModularInverse(syndrome, irredPoly, gF.gf_irredPoly).get(1);
-//System.out.println("Really inverse? " + Poly.multiply(syndrome, synInverse, gF.gf_irredPoly, irredPoly));
-	   //add f(x) = x to inverse
-	   //Polynomial add = new Polynomial(synInverse.coefficients + 2);
-	   Poly add = Poly.add(synInverse, Poly.xPoly);
-	   //calculate sqrt(x + syndrome inverse)
-	   Poly sqrt = Poly.calcSqrt(add, irredPoly, gF.gf_irredPoly.degree, gF.gf_irredPoly);
-	   //System.out.println("sqrt is: " + sqrt.toString());
-	   //System.out.println("before reducing: " + Poly.toPower(sqrt, gF.gf_irredPoly, 2));
-//System.out.println("really sqrt? " + add.equals(Poly.getRemainder(Poly.toPower(sqrt, gF.gf_irredPoly, 2), irredPoly, gF.gf_irredPoly)));
-	   //calculate a and b s.t. (b * sqrt(x + synd)) = (a) mod (goppa poly)
-	   //where deg(a) <= floor(goppa deg / 2) and deg(b) <= floor((goppa deg - 1) / 2)
-	   Poly[] polys = Poly.partialGCDNew(sqrt, irredPoly, gF.gf_irredPoly);
-	   Poly polyA = polys[0];
-	   Poly polyB = polys[1];
-//System.out.println("Poly A: " + polyA.toString());
-//System.out.println("Poly B: " + polyB.toString());
-	   Poly test = Poly.multiply(polyB, sqrt, gF.gf_irredPoly);
-//System.out.println("equal? " + Poly.getRemainder(test, irredPoly, gF.gf_irredPoly).toString() + " and " + polyA.toString());
-	   
-	   Poly errorLoc = Poly.multiply(polyA, polyA, gF.gf_irredPoly);
-	   polyB = Poly.multiply(polyB, polyB, gF.gf_irredPoly);
-	   polyB = Poly.multiply(Poly.xPoly, polyB, gF.gf_irredPoly);
-	  //errorLoc.coefficients ^= polyB.coefficients;
-	   errorLoc = Poly.add(errorLoc, polyB);
-	   Poly.getDegree(errorLoc);
-System.out.println("Error Locator Polynomial: " + errorLoc.toString());
-   
-   
-      
-	   	   
-	   Poly trace = getTracePolynomial();
-
-	   List<gfPoly> roots = runBerl(errorLoc, 0, trace);
-	   
-	   
-
-	   int[] decryptedError = new int[codeWord.length];
-	   System.out.print("Locations of roots of error locator polynomial: ");
-	   for(int i = 0; i < support.length; i++)
-	   {
-	      for(int k = 0; k < roots.size(); k++)
-	      {
-	         if(support[i].equals(roots.get(k)))
-	         {
-	            decryptedError[i] = 1;
-	            System.out.print(i + ", ");
-	         }
-	      }
-	   }
-	   System.out.println();
-	   int[][] permMatErr = new int[1][errorVec.length];
-	   for(int cop = 0; cop < errorVec.length; cop++)
-	   {
-	      permMatErr[0][cop] = errorVec[cop];
-	   }
-	   permMatErr = multiply(permMatErr, invert(permutation));
-	   /*
-	   for(int i = 0; i < errorVec.length; i++)
-	   {
-	      if(permMatErr[0][i] == 1)
-	      {
-	         System.out.print(i + ", ");
-	      }
-	   }
-	   System.out.println();
-	   */
-	   int[][] errorMatrix = new int[decryptedError.length][1];
-	   for(int loc = 0; loc < decryptedError.length; loc++)
-	   {
-	      errorMatrix[loc][0] = decryptedError[loc];
-	   }
-	   //errorMatrix = multiply(invert(McEliece.permutation), errorMatrix);
-	   for(int eLoc = 0; eLoc < codeWord.length; eLoc++)
-	   {
-	      decryptedError[eLoc] = errorMatrix[eLoc][0];
-	   }
-
-	   codeWord = add(codeWord, decryptedError);
-System.out.println("After running decryption algorithm:");
-print(codeWord);
-/*
-	   int [][] codeWordMatrix = new int[1][codeWord.length];
-	   for(int convert = 0; convert < codeWord.length; convert++)
-	   {
-	      codeWordMatrix[0][convert] = codeWord[convert];
-	   }
-	   */
-int messageLength = support.length - extDegree*numErrors;
-int[] recMessage = new int[messageLength];
-for(int msgIndex = 0; msgIndex < messageLength; msgIndex++)
-{
-   recMessage[msgIndex] = codeWord[msgIndex];
-}
-
-
-int[][] codeWordMatrix = new int[1][messageLength];
-for(int matIndex = 0; matIndex<messageLength; matIndex++)
-{
-   codeWordMatrix[0][matIndex] = recMessage[matIndex];
-}
-/*
-	   System.out.println("getting right inverse of:");
-print(genMatrix);
-System.out.println("\n\n about to get inverse of gen");	   
-	   int[][] rightInverseGen = multiply(
-	         getTranspose(genMatrix),
-	         invert(multiply(genMatrix, getTranspose(genMatrix))));
-	   System.out.println("Inverse?");
-	   print(multiply(genMatrix, rightInverseGen));
-
-	   int[][] otherElt = multiply(genMatrix, getTranspose(genMatrix));
-
-	   codeWordMatrix = multiply(codeWordMatrix, rightInverseGen);
-*/
-if(!isSystematic(multiply(scramble, invert(scramble)), 0))
-{
-   System.out.println("not inverse!");
-}
-	   codeWordMatrix = multiply(codeWordMatrix, invert(scramble));
-
-	   for(int k = 0; k < codeWordMatrix[0].length; k++)
-	   {
-	      decoded[k] = codeWordMatrix[0][k];
-	   }
-	   System.out.println("Decrypted: ");
-	   print(decoded);
-	   
-	    
-	   return decoded;
-	   
-	}
-	
 	static int[] add(int[] vec1, int[] vec2) 
 	{
       if(vec1.length == vec2.length)
@@ -1295,6 +1069,11 @@ if(!isSystematic(multiply(scramble, invert(scramble)), 0))
 	   {
 	      if(encoded[i] == 1)
 	      {
+	    	  Poly toInv = Poly.add(Poly.xPoly, new Poly(support[i]));
+System.out.println("at i= " + i + " getting inverse of " + toInv.toString());
+Poly inv = Poly.getModularInverse(toInv, irredPoly, gF.gf_irredPoly).get(1);
+System.out.println("inverse is: " + inv.toString());
+System.out.println("got inv? " + Poly.multiply(toInv, inv, gF.gf_irredPoly, irredPoly).toString());
 	         factor = Poly.getModularInverse(Poly.add(Poly.xPoly, new Poly(support[i])), irredPoly, gF.gf_irredPoly).get(1);
 	         syndrome = Poly.add(syndrome,  factor);
 	      }
