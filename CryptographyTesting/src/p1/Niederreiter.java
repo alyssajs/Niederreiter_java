@@ -79,12 +79,13 @@ public class Niederreiter
             }
          }
       }
-      
+      /*
       for(int test = 0; test < zeroes.length; test++)
       {
          System.out.print(zeroes[test] + " ");
       }
       System.out.println();
+      */
       return zeroes;
    }
    
@@ -186,12 +187,13 @@ public class Niederreiter
          result[u - digit - 1] = delta % d;
          delta = delta / 2;
       }
+      /*
       for(int t = 0; t < result.length; t++)
       {
          System.out.print(result[t] + " ");
       }
       System.out.println();
-      
+      */
       return result;
       
    }
@@ -254,20 +256,21 @@ public class Niederreiter
 	      parityCheck = getParityCheck(extDegreeIn, numErrorsIn, suppSize);
 	   }while(!isSystematic(parityCheck, parityCheck[0].length-parityCheck.length));
    
-	   System.out.println("extDegree: " +  extDegree);
+	  // System.out.println("Extension Degree: " +  extDegree);
 	   
-	   System.out.println("numErrors: " + numErrors);
+	  // System.out.println("Number of Errors: " + numErrors);
 	   
+	   /*
 	   System.out.println("support: ");
 	   print(support);
+	   */
 	   
-	   
-	   System.out.println("irredPoly: " + irredPoly.toString());
+	   System.out.println("Goppa polynomial: " + irredPoly.toString());
 	
 	   
-	  System.out.println("field poly: " + gF.gf_irredPoly);
+	  System.out.println("Field polynomial: " + gF.gf_irredPoly);
 	   
-	  System.out.println("PC: ");
+	  System.out.println("Parity Check: ");
 	 print(parityCheck);
 	  
 	   
@@ -316,17 +319,30 @@ public class Niederreiter
     		  }
     		  else
     		  {
-    			  pTwo[0] = support[i];
+    			  //pTwo[0] = support[i];
     		  }
     	  }
     		  
       }
       
       pOne[1] = new gfPoly(1);
-      pTwo[1] = new gfPoly(1);
+      //pTwo[1] = new gfPoly(1);
       Poly polyOne = new Poly(pOne);
+      /*
       Poly polyTwo = new Poly(pTwo);
+      System.out.println("polyOne coeff vector:");
+      print(pOne);
+      System.out.println("polyTwo coeff vector: ");
+     print(pTwo);
+      System.out.println("polyOne coeffs 0 null? " + pOne[0]==null);
+      System.out.println("polyTwo coeffs null? " + pTwo[0]==null);
+     // System.out.println("polyTwo.coeffs null? " + polyOne.coefficients==null);
+      System.out.println("polyTwo.coeffs null? " + polyTwo.coefficients==null);
+
       System.out.println("Two polys are " + polyOne.toString() + " and " + polyTwo.toString());
+      */
+      System.out.println("errorLoc should be: " + polyOne.toString());
+      /*
       Poly prod = Poly.multiply(polyOne, polyTwo, gF.gf_irredPoly);
       System.out.println("error loc should be: " + prod.toString());
       Poly trace = getTracePolynomial();
@@ -337,7 +353,7 @@ public class Niederreiter
     	  System.out.println(theseRoots.get(i) + ", ");
       }
       System.out.println("^^^^^^^");
-      
+      */
       //^^^^^^^^^^^^^^^^^
       int[][] messageMatTransp = new int[message.length][1];
       
@@ -394,24 +410,29 @@ print(encryptedMat);
       return parityCheck;
    }
    */
-   static int[] decrypt(int[] ciphertext)
+   static int[] decrypt(int[] ciphertext, int[] actual)
    {
       //multiply by random matrix inverse
       int[][] randInverse = invert(scramble);
-      // int[][] decryptedTemp = new int[1][ciphertext.length];
+     
+      /*
+      int[][] decryptedTemp = new int[1][ciphertext.length];
       
       
-      //decryptedTemp[0] = ciphertext;
+      decryptedTemp[0] = ciphertext;
       
-     // decryptedTemp = multiply(decryptedTemp, randInverse);
-      
+      decryptedTemp = multiply(decryptedTemp, randInverse);
+      */
+       
       int[][] decryptedTemp = vecTranspose(ciphertext);
       decryptedTemp = multiply(randInverse, decryptedTemp);
+      
+      System.out.println("after multiplying:");
      print(decryptedTemp);
-   
+    
       
       int[][] decryptedNext = new int[1][parityCheck[0].length];
-   
+    
       //use syndrome decoder (patterson/BTA??)
       
       int[] unscrambled = new int[decryptedTemp.length];
@@ -419,8 +440,14 @@ print(encryptedMat);
       {
          unscrambled[loc] = decryptedTemp[loc][0];
       }
-      decryptedNext[0] = pattersonDecode(unscrambled, parityCheck);
+      System.out.println("passing in for decryption:");
+      print(unscrambled);
+      decryptedNext[0] = pattersonDecode(unscrambled, parityCheck, actual);
       
+      /*
+      int[][] decryptedNext = new int[1][parityCheck[0].length];
+      decryptedNext[0] = pattersonDecode(ciphertext, parityCheck);
+      */
       //then multiply by permInverse
       int[][] permInverse = invert(permutation);
       
@@ -430,7 +457,7 @@ print(encryptedMat);
    }
    
 
-   public static int[] pattersonDecode(int[] codeWord, int[][] parityCheck)
+   public static int[] pattersonDecode(int[] codeWord, int[][] parityCheck, int[] actual)
    {
       System.out.println("codeWord.length+ " + codeWord.length);
       System.out.println("support size " + support.length);
@@ -453,8 +480,24 @@ print(encryptedMat);
    
       //Multiply ciphertext by parity check matrix to get syndrome polynomial
       //Poly syndrome = getSyndrome(codeWord, numErrors, extDegree);
+      Boolean gotAnswer = false;
+
       Poly syndrome = altSyndrome(codeWord);
-      System.out.println("Syndrome: " + syndrome.toString());      
+      System.out.println("Syndrome: " + syndrome.toString());  
+      //gfPoly inv = gfPoly.getModularInverse(syndrome.coefficients[1], gF.gf_irredPoly);
+      //syndrome = Poly.multiply(syndrome, inv, gF.gf_irredPoly);
+      //System.out.println("now syndrome is: " + syndrome.toString());
+      /*
+      gfPoly pOne = new gfPoly(7);
+      gfPoly pTwo = new gfPoly(1);
+      gfPoly pThree = new  gfPoly(1);
+      syndrome = new Poly(new gfPoly[] {pOne, pTwo, pThree});
+      */
+      while(!gotAnswer)
+      {
+      syndrome = Poly.getRandSyn(numErrors-1, extDegree);
+      System.out.println("randomly generated syndrome: " + syndrome.toString());
+  
 
       //Invert syndrome polynomial mod goppa polynomial 
       Poly synInverse = Poly.getModularInverse(syndrome, irredPoly, gF.gf_irredPoly).get(1);
@@ -463,24 +506,24 @@ System.out.println("really inv? " + Poly.multiply(synInverse, syndrome, gF.gf_ir
       //Polynomial add = new Polynomial(synInverse.coefficients + 2);
       Poly add = Poly.add(synInverse, Poly.xPoly);
       //calculate sqrt(x + syndrome inverse)
-System.out.println("trying to get sqrt of " + add.toString());
-System.out.println("polys are " + irredPoly.toString() + " and " + gF.gf_irredPoly);
+//System.out.println("trying to get sqrt of " + add.toString());
+//System.out.println("polys are " + irredPoly.toString() + " and " + gF.gf_irredPoly);
       Poly sqrt = Poly.calcSqrt(add, irredPoly, gF.gf_irredPoly.degree, gF.gf_irredPoly);
 //      System.out.println("got sqrt: " + sqrt.toString());
- System.out.println("sqrt is: " + sqrt.toString());
+// System.out.println("sqrt is: " + sqrt.toString());
       //System.out.println("before reducing: " + Poly.toPower(sqrt, gF.gf_irredPoly, 2));
 //      System.out.println("should get " + add.toString());
 //      System.out.println("But squared  is " + Poly.getRemainder(Poly.toPower(sqrt, gF.gf_irredPoly, 2), irredPoly, gF.gf_irredPoly).toString());
-System.out.println("really sqrt? " + add.equals(Poly.getRemainder(Poly.toPower(sqrt, gF.gf_irredPoly, 2), irredPoly, gF.gf_irredPoly)));
+//System.out.println("really sqrt? " + add.equals(Poly.getRemainder(Poly.toPower(sqrt, gF.gf_irredPoly, 2), irredPoly, gF.gf_irredPoly)));
       //calculate a and b s.t. (b * sqrt(x + synd)) = (a) mod (goppa poly)
       //where deg(a) <= floor(goppa deg / 2) and deg(b) <= floor((goppa deg - 1) / 2)
       Poly[] polys = Poly.partialGCDNew(sqrt, irredPoly, gF.gf_irredPoly);
       Poly polyA = polys[0];
       Poly polyB = polys[1];
-System.out.println("Poly A: " + polyA.toString() + " should have degree smaller than " + (numErrors)/2);
-System.out.println("Poly B: " + polyB.toString() + " should have degree smaller than " + (numErrors-1)/2);
+//System.out.println("Poly A: " + polyA.toString() + " should have degree smaller than " + (numErrors)/2);
+//System.out.println("Poly B: " + polyB.toString() + " should have degree smaller than " + (numErrors-1)/2);
       Poly test = Poly.multiply(polyB, sqrt, gF.gf_irredPoly);
-System.out.println("equal? " + Poly.getRemainder(test, irredPoly, gF.gf_irredPoly).toString() + " and " + polyA.toString());
+//System.out.println("equal? " + Poly.getRemainder(test, irredPoly, gF.gf_irredPoly).toString() + " and " + polyA.toString());
       
       Poly errorLoc = Poly.multiply(polyA, polyA, gF.gf_irredPoly);
       polyB = Poly.multiply(polyB, polyB, gF.gf_irredPoly);
@@ -488,8 +531,8 @@ System.out.println("equal? " + Poly.getRemainder(test, irredPoly, gF.gf_irredPol
       errorLoc = Poly.add(errorLoc, polyB);
       Poly.getDegree(errorLoc);
 System.out.println("Error Locator Polynomial: " + errorLoc.toString());
-gfPoly inv = gfPoly.getModularInverse(errorLoc.coefficients[2], gF.gf_irredPoly);
-System.out.println("monic errorLoc " + Poly.multiply(errorLoc, inv, gF.gf_irredPoly).toString());   
+//gfPoly inv = gfPoly.getModularInverse(errorLoc.coefficients[2], gF.gf_irredPoly);
+//System.out.println("monic errorLoc " + Poly.multiply(errorLoc, inv, gF.gf_irredPoly).toString());   
    
       
             
@@ -586,6 +629,12 @@ print(decoded);
       print(zeroes);
       System.out.println("Decoded? ");
       print(decodeCW(numErrors, permErrVec.length, zeroes));
+      
+      if(permErrVec[1] == 1)
+      {
+    	  gotAnswer = true;
+      }
+      }
       return decoded;
       
    }
@@ -600,42 +649,42 @@ print(decoded);
       
       return vecTransp;
    }
+   public static gfPoly[][] vecTranspose(gfPoly[] vec)
+   {
+      gfPoly[][] vecTransp = new gfPoly[vec.length][1];
+      for(int loc = 0; loc < vec.length; loc++)
+      {
+         vecTransp[loc][0] = vec[loc];
+      }
+      
+      return vecTransp;
+   }
+   
    
    public static Poly getSyndrome(int[] codeWord, int numErrors,
          int extDegree)
    {
       
       int currCoeffs = 0;
-      int iter = 0; 
+      int iter = numErrors-1; 
       System.out.println("in getSyn with ");
       print(codeWord);
       Poly syndrome = new Poly(numErrors - 1);
       int[] synVec = codeWord;
+      gfPoly[] synPolys = new gfPoly[codeWord.length/extDegree];
       
       
-      for(int index = synVec.length - 1; index >= 0; index--)
-      {
-         currCoeffs += (int)Math.pow(2, index % extDegree) * synVec[index];
-         if(index % extDegree == 0)
-         {
-            syndrome.coefficients[iter] = new gfPoly(currCoeffs);
-            System.out.println("gfPoly: " + syndrome.coefficients[iter].toString());
-            currCoeffs = 0;
-            iter++;
-         }
-
-      }
       
-      
-      /*
       for(int index = 0; index <= synVec.length-1; index++)
       {
          if(index % extDegree == 0 && index != 0)
          {
            
             syndrome.coefficients[iter] = new gfPoly(currCoeffs);
+            synPolys[iter] = new gfPoly(currCoeffs);
+
             currCoeffs = 0;
-            iter++;
+            iter--;
          }
          currCoeffs += (int)Math.pow(2, index % extDegree) * synVec[index];
 
@@ -643,9 +692,61 @@ print(decoded);
         syndrome.coefficients[iter] = new gfPoly(currCoeffs);
 
       }
+      /*
+      
+      for(int index = synVec.length - 1; index >= 0; index--)
+      {
+         currCoeffs += (int)Math.pow(2, index % extDegree) * synVec[index];
+         if(index % extDegree == 0 && index != 0)
+         {
+            syndrome.coefficients[iter] = new gfPoly(currCoeffs);
+            synPolys[iter] = new gfPoly(currCoeffs);
+            System.out.println("gfPoly: " + syndrome.coefficients[iter].toString());
+            currCoeffs = 0;
+            iter++;
+            
+            
+         }
+         
+      }
       */
       
+      syndrome.coefficients[iter] = new gfPoly(currCoeffs);
       
+      /*
+      synPolys[iter] = new gfPoly(currCoeffs);
+
+      gfPoly[][] coeffMat = new gfPoly[numErrors][numErrors];
+      for(int row = 0; row < numErrors; row++)
+      {
+    	  for(int col = 0; col < numErrors; col++)
+    	  {
+    		  if(col >= row) 
+    		  {
+    			  coeffMat[row][col] = irredPoly.coefficients[numErrors - (col - row)];
+    		  }
+    		  else
+    		  {
+    			  coeffMat[row][col] = new gfPoly(0);
+    		  }
+    	  }
+      }
+      McEliece.print(coeffMat);
+      McEliece.print(synPolys);
+      gfPoly[][] prod = McEliece.multiply(coeffMat, vecTranspose(synPolys), gF.gf_irredPoly);
+      McEliece.print(prod);
+      gfPoly[] prodVec = new gfPoly[prod.length];
+      for(int i = 0; i < prodVec.length; i++)
+      {
+    	  prodVec[i] = prod[i][0];
+      }
+      syndrome = new Poly(prodVec);
+      */
+      
+
+
+      
+
       //coefficients go from highest to degree to lowest degree of x 
       //and lowest degree to highest degree of z
       return syndrome;
@@ -1481,6 +1582,10 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 			/*
 			System.out.println("in here with irredPoly: " + irredPoly.toString());
 			System.out.println("and gfPoly is " + gF.gf_irredPoly);
+			System.out.println("and cw is ");
+			McEliece.print(encoded);
+			McEliece.print(support);
+			*/
 		   Poly factor;
 		   
 		   Poly syndrome = new Poly(Poly.zeroPoly, 0);
@@ -1488,13 +1593,56 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 		   {
 		      if(encoded[i] == 1)
 		      {
+		    	  System.out.println("Getting inverse of x - " + support[i].toString());
 		         factor = Poly.getModularInverse(Poly.add(Poly.xPoly, new Poly(support[i])), irredPoly, gF.gf_irredPoly).get(1);
 		         syndrome = Poly.add(syndrome,  factor);
+		         System.out.println("now syndrome is: " + syndrome.toString());
 		      }
 		      
 		      
 		   }
-		   */
+		   
+			/*
+			System.out.println("polyParity: ");
+			print(polyParity);
+			
+			System.out.println("extending: ");
+			print(encoded);
+			int[] encCopy = new int[polyParity[0].length];
+			for(int i = 0; i < encoded.length; i++)
+			{
+				encCopy[i] = encoded[i];
+			}
+			System.out.println("extended: ");
+			print(encCopy);
+			System.out.println("mult");
+			gfPoly[][] res = (mult(encCopy, polyParity, gF.gf_irredPoly));
+		
+			   Poly syndrome = new Poly();
+			   Poly newFact;
+		      //if code word vector is 1, then add the factor	  
+		      for(int parityCol = 0; parityCol < polyParity[0].length; parityCol++)
+		      {
+		         if(encCopy[parityCol] == 1)
+		         {
+		            for(int parityRow = 0; parityRow < polyParity.length; parityRow++)
+		            {
+
+		  
+		               newFact = Poly.toPower(Poly.xPoly, gF.gf_irredPoly, polyParity.length - parityRow - 1);
+		               newFact = Poly.multiply(newFact, polyParity[parityRow][parityCol], gF.gf_irredPoly);
+		               syndrome = syndrome.add(syndrome, newFact);
+		            }
+		         } 
+		         
+		      }
+		  	gfPoly[] res1 = new gfPoly[res.length];
+			for(int resLoc = 0; resLoc < res1.length; resLoc++)
+			{
+				res1[resLoc] = res[resLoc][0];
+			}
+			syndrome = new Poly(res1);
+			   return syndrome;			/*
 			Poly factor;
 			gfPoly prod;
 			Poly syndrome = new Poly(Poly.zeroPoly, 0);
@@ -1502,7 +1650,10 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 			{
 				if(encoded[i]==1)
 				{
+					gfPoly toInv = Poly.eval(irredPoly, support[i], gF.gf_irredPoly);
+					System.out.println("getting modular inverse of " + Poly.eval(irredPoly, support[i], gF.gf_irredPoly));
 					prod = gfPoly.getModularInverse(Poly.eval(irredPoly, support[i], gF.gf_irredPoly), gF.gf_irredPoly);
+					System.out.println("really inv? " + gfPoly.gf_multiply(toInv, prod, gF.gf_irredPoly));
 					factor = Poly.getModularInverse(Poly.add(Poly.xPoly, new Poly(support[i])), irredPoly, gF.gf_irredPoly).get(1);
 					factor = Poly.add(irredPoly, Poly.add(Poly.xPoly, new Poly(prod)));
 					factor = Poly.multiply(factor, prod, gF.gf_irredPoly);
@@ -1511,7 +1662,52 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
 				}
 			}
 			System.out.println("in here, got " + syndrome.toString());
+			*/
+			
 		   return syndrome;
+		}
+		
+		public static gfPoly[][] mult(int[] vec, Poly[][] polyPar, gfPoly fieldPol)
+		{
+			gfPoly[][] vecMat = new gfPoly[vec.length][1];
+			for(int i = 0; i < vec.length; i++)
+			{
+			
+				vecMat[i][0] = new gfPoly(vec[i]);
+				
+			}
+			
+			if(polyPar[0].length != vecMat.length)
+			{
+				return null; 
+			}
+			gfPoly[][] result = new gfPoly[polyPar.length][vecMat[0].length];
+					
+			
+			
+			int matrix1Row, matrix2Column, iterIndex;
+			
+			for(matrix1Row = 0; matrix1Row < polyPar.length; matrix1Row++)
+			{
+				for(matrix2Column = 0; matrix2Column < vecMat[0].length;
+						matrix2Column++)
+				{
+					result[matrix1Row][matrix2Column] = new gfPoly(0);
+					for(iterIndex = 0; iterIndex < vecMat.length;
+							iterIndex++)
+						{
+							result[matrix1Row][matrix2Column] = gF.gf_add(result[matrix1Row][matrix2Column], Poly.multiply(polyParity[matrix1Row][iterIndex],
+									new Poly(new gfPoly[] { vecMat[iterIndex][matrix2Column]}), gF.gf_irredPoly).coefficients[0]);
+							
+
+						}
+					
+				}
+					
+			}
+			
+			return result;
+					
 		}
 		
 }

@@ -8,14 +8,31 @@ import java.util.Scanner;
 
 public class gfPoly 
 {
+   //degree of the polynomial	
    public int degree;
+   
+   //coefficients of the polynomial are bits of the binary representation 
    public int coeffs;
+   
+   //zero polynomial (p(z) = 0)
    public static gfPoly gfZero = new gfPoly(0);
+   
+   //one polynomial (p(z) = 1)
    public static gfPoly gfOne = new gfPoly(1);
+   
+   //z polynomial (p(z) = z)
    public static gfPoly gfZ = new gfPoly("10", 1);
   
    public static Scanner scan = new Scanner(System.in);
    
+   /**
+    * Creates new polynomial from decimal representation of coefficients
+    * Coefficients are bits of binary representation
+    * <p>
+    * e.g. z^2 + z = 110 in binary = 6 in decimal, so input 6 to
+    * this constructor for the polynomial z^2+z
+    * @param coeff Decimal representation of coefficients
+    */
    public gfPoly(int coeff)
    {
       coeffs = coeff;
@@ -30,6 +47,14 @@ public class gfPoly
       }
    }
    
+   /**
+    * Creates polynomial from a string
+    * <p>
+    * e.g. inputting "110, 2" is the polynomial z^2+z
+    * @param coeff String representation of the coefficients going from highest degree to lowest
+    * degree
+    * @param deg Degree of the polynomial 
+    */
    public gfPoly(String coeff, int deg)
    {
       coeffs = Integer.parseInt(coeff, 2);
@@ -37,6 +62,13 @@ public class gfPoly
    }
    
 
+   /**
+    * Creates random irreducible polynomial of given degree
+    * by repeatedly generating random polynomials of the given degree 
+    * and testing for irreducibility
+    * @param deg Desired degree of the polynomial
+    * @return Irreducible polynomial of given degree over GF(2)
+    */
    public static gfPoly getIrredPoly(int deg)
    {
       gfPoly irredPoly;
@@ -55,32 +87,27 @@ public class gfPoly
       
    }
    
+   /**
+    * Creates polynomial by shifting a given polynomial by a specified amount
+    * <p>
+    * e.g. inputting z^2+z and 2 creates the polynomial z^4+z^3
+    * @param poly Polynomial to shift
+    * @param shift Amount to shift polynomial by
+    */
    public gfPoly(gfPoly poly, int shift)
    {
       coeffs = poly.coeffs << shift;
       degree = poly.degree + shift;
    }
    
+   /**
+    * Tests whether or not polynomial is irreducible over GF(2)
+    * @return Boolean value representing whether or not polynomial is irreducible
+    * over GF(2)
+    */
    public boolean isIrreducible()
    { 
-      //Polynomial factor = new Polynomial(10, 1);
       gfPoly square = new gfPoly("10", 2);
-      
-      /*i <= this.degree/2
-      for(int i = 0; i < this.degree; i++)
-      {
-         square = multiply(square, square);
-
-         square = getRemainder(square, this);
-      }
-      
-      if(square.coefficients.equals(new BigInteger("2")))
-      {
-         return true;
-      }
-      
-      return false;
-      */
       
       for(int i = 0; i < this.degree / 2; i++)
       {
@@ -96,6 +123,11 @@ public class gfPoly
    
    }
    
+   /**
+    * Generated random polynomial of given degree over GF(2)
+    * @param deg Desired degree of polynomial
+    * @return Random polynomial of given degree
+    */
    public static gfPoly getRandPoly(int deg)
    {
       int coeffs;
@@ -113,18 +145,30 @@ public class gfPoly
       
    }
    
-   //gets result of polyOne - polyTwo
+   /**
+    * Adds two polynomials over GF(2)
+    * @param polyOne First polynomial to add
+    * @param polyTwo Second polynomial to add
+    * @return Polynomial sum
+    */
    public static gfPoly gf_add(gfPoly polyOne, gfPoly polyTwo)
    {
       gfPoly result = new gfPoly(0);
      
-      //result.coefficients = polyOne.coefficients ^ polyTwo.coefficients;
       result.coeffs = polyOne.coeffs ^ polyTwo.coeffs;
       getDegree(result);
       
       return result;
    }
    
+   /**
+    * Multiplies two polynomials over GF(2) and reduces modulo a given irreducible polynomial 
+    * over GF(2)
+    * @param pOne First polynomial to multiply
+    * @param pTwo Second polynomial to multiply
+    * @param irredPoly Polynomial to reduce by
+    * @return Polynomial product modulo given irreducible polynomial
+    */
    public static gfPoly gf_multiply(gfPoly pOne, gfPoly pTwo, gfPoly irredPoly)
    {
       int resultCoeffs = 0;
@@ -134,7 +178,6 @@ public class gfPoly
       {
          if((pTwo.coeffs >> i & 1) == 1)
          {
-            //resultCoeffs ^= polyOne.coefficients << i;
             resultCoeffs = resultCoeffs ^ pOne.coeffs << i;
          }
       }
@@ -148,6 +191,12 @@ public class gfPoly
       return result; 
    }
    
+   /**
+    * Multiplies two polynomials over GF(2)
+    * @param pOne First polynomial to multiply
+    * @param pTwo Second polynomial to multiply
+    * @return Polynomial product reduced over GF(2)
+    */
    public static gfPoly multiply(gfPoly pOne, gfPoly pTwo)
    {
       int resultCoeffs = 0;
@@ -157,7 +206,6 @@ public class gfPoly
       {
          if((pTwo.coeffs >> i & 1) == 1)
          {
-            //resultCoeffs ^= polyOne.coefficients << i;
             resultCoeffs = resultCoeffs ^ pOne.coeffs << i;
          }
       }
@@ -169,6 +217,11 @@ public class gfPoly
       return result; 
    }
 
+   /**
+    * Tests for equality
+    * @param other Polynomial to compare to
+    * @return Boolean value indiciating whether or not polynomials have the same coefficients
+    */
    public boolean equals(gfPoly other)
    {
      if(this.coeffs == other.coeffs)
@@ -180,9 +233,14 @@ public class gfPoly
    }
 
 
+   /**
+    * Gets remainder after dividing first polynomial by second polynomial
+    * @param numerator Polynomial to divide 
+    * @param denominator Polynomial to divide by
+    * @return Remainder after dividing numerator by denominator
+    */
 public static gfPoly getRemainder(gfPoly numerator, gfPoly denominator)
 {  
-
 
    gfPoly num = new gfPoly(numerator.coeffs);
    gfPoly denom = new gfPoly(denominator.coeffs);
@@ -213,6 +271,12 @@ public static gfPoly getRemainder(gfPoly numerator, gfPoly denominator)
    return gfZero;
 }
 
+/**
+ * Gets polynomial greatest common divisor of first and second polynomials
+ * @param polyOne First polynomial 
+ * @param polyTwo Second polynomial
+ * @return Polynomial greatest common divisor over GF(2) of given polynomials
+ */
 public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
 {
    gfPoly pOne = polyOne;
@@ -231,6 +295,9 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
 
 }
 
+   /**
+    * Gives string representation of polynomial
+    */
    public String toString()
    {
       String polynomial = "";
@@ -267,6 +334,10 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
       
    }
 
+   /**
+    * Calculates and updates degree of polynomial
+    * @param poly Polynomial to get degree of 
+    */
    public static void getDegree(gfPoly poly)
    {
       if(poly.coeffs == 0)
@@ -279,16 +350,19 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
 
       }
    }
-
+   
+   /**
+    * Gets quotient of num polynomial divided by denom polynomial over GF(2)
+    * @param num Polynomial to divide
+    * @param denom Polynomial to divide by
+    * @return Quotient polynomial over GF(2) of num divided by denom
+    */
    public static gfPoly getQuotient(gfPoly num, gfPoly denom)
    {
 
       gfPoly numerator = new gfPoly(num, 0);
       gfPoly denominator = new gfPoly(denom, 0);
-      /*
-      System.out.println(numerator.toString() + "/" + denominator.toString());
-      System.out.println(numerator.degree + ", " + denominator.degree);
-      */
+
       getDegree(numerator);
       getDegree(denominator);
    
@@ -302,10 +376,8 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
       gfPoly shiftedDenominator;
       while(numerator.degree > denominator.degree)
       {
-           //quotient.coefficients ^= 1 << numerator.degree - denominator.degree;
             quotient.coeffs = quotient.coeffs ^ (1 << numerator.degree - denominator.degree);
             shiftedDenominator = new gfPoly(denominator, numerator.degree - denominator.degree);
-            //numerator.coefficients ^= shiftedDenominator.coefficients;
             numerator.coeffs = numerator.coeffs ^ (shiftedDenominator.coeffs);
            getDegree(numerator);
 
@@ -319,12 +391,24 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
       return quotient;
    }
    
-
+   /**
+    * Gets inverse of polynomial modulo given polynomial
+    * @param poly Polynomial to invert
+    * @param mod Polynomial modulus
+    * @return Multipliative inverse of poly modulo mod over GF(2)
+    */
    public static gfPoly getModularInverse(gfPoly poly, gfPoly mod)
    {
       return getModularInverseHelper(poly, mod).get(1);
    }
    
+   /**
+    * Helper method to calculate modular inverse
+    * @param pOne First polynomial
+    * @param pTwo Second polynomial
+    * @return First entry of list is inverse of pOne modulo pTwo, second entry of list 
+    * is inverse of pTwo modulo pOne
+    */
    public static List<gfPoly> getModularInverseHelper(gfPoly pOne, gfPoly pTwo)
    {
 
@@ -341,8 +425,6 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
       }
       else
       {
-        // System.out.println("mod isn't zero yet");
-
          result = getModularInverseHelper(pTwo, getRemainder(pOne, pTwo));
       
          
@@ -368,7 +450,13 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
       return result;
    }
       
-   
+   /**
+    * Raises poly to given power modulo mod
+    * @param poly Polynomial over GF(2) to raise to power
+    * @param mod Polynomial modulus over GF(2)
+    * @param power Integer power to raise poly to
+    * @return poly^power modulo mod over GF(2)
+    */
    public static gfPoly toPower(gfPoly poly, gfPoly mod, int power)
    {
      gfPoly result = gfOne; 
@@ -383,7 +471,12 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
      
    }
    
-   
+   /**
+    * Raises polynomial to given power over GF(2)
+    * @param poly Polynomial over GF(2)
+    * @param power Integer power to raise poly to
+    * @return poly^power over GF(2)
+    */
    public static gfPoly toPower(gfPoly poly, int power)
    {
      gfPoly result = gfOne; 
@@ -423,7 +516,13 @@ public static gfPoly gcd(gfPoly polyOne, gfPoly polyTwo)
    
    
 
-   
+   /**
+    * Calculates polynomial p such that p^2 = poly modulo mod 
+    * @param poly Polynomial to square root
+    * @param mod Polynomial modulus
+    * @param extDegree Extension degree of finite field over which this calculation is being done
+    * @return Square root of poly modulo mod over GF(2^extDegree)
+    */
    static gfPoly calcSqrt(gfPoly poly, gfPoly mod, int extDegree)
    {
       //return toPower(poly, mod, (int)Math.pow(2, extDegree * mod.degree - 1));

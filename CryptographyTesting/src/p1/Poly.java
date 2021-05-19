@@ -124,6 +124,21 @@ public class Poly
       return new Poly(coeffs);
     }
     
+    public static Poly getRandSyn(int deg, int fieldExp)
+    {
+       gfPoly[] coeffs = new gfPoly[deg + 1];
+       int gfPolyDeg;
+       for(int coeffLoc = 0; coeffLoc <= deg; coeffLoc++)
+       {
+          gfPolyDeg = (int)(Math.random()*fieldExp);
+          coeffs[coeffLoc] = gfPoly.getRandPoly(gfPolyDeg);
+
+       }
+       
+
+       
+      return new Poly(coeffs);
+    }
     /*
     public static long decToBinary(long n)
     {
@@ -721,7 +736,6 @@ public class Poly
     public static Poly[] partialGCD(Poly sqrt, Poly mod, gfPoly fieldPoly)
     {
       int breakPoint = (int)(mod.degree / 2);
-System.out.println("breakpoint: " + breakPoint);      
       Poly rem_prev = new Poly(mod, 0);
       Poly rem = new Poly(sqrt, 0);
       Poly rem_temp = new Poly();
@@ -743,10 +757,8 @@ System.out.println("breakpoint: " + breakPoint);
          quotient = getQuotient(rem_prev, rem, fieldPoly);
          getDegree(quotient);
          rem_temp = rem;
-System.out.println("Getting remainder of " + rem_prev.toString() + " divided by " + rem.toString());
          rem = getRemainder(rem_prev, rem, fieldPoly);
          getDegree(rem);
-         System.out.println("now rem is: " + rem.toString());
          rem_prev = rem;
          b_temp = b;
          b = add(b_prev, multiply(quotient, b, fieldPoly));
@@ -780,13 +792,13 @@ System.out.println("Getting remainder of " + rem_prev.toString() + " divided by 
        
        while(rArray[1].degree > stoppingPoint)
        {
-          System.out.println("in this loop in pgcdNew");
+          //System.out.println("in this loop in pgcdNew");
           //System.out.println("now getting quotient of: ");
           //System.out.println(rArray[0].toString() + " / ");
           //System.out.println(rArray[1].toString());
-          System.out.println("getting quotient between " + rArray[0].toString() + " and " + rArray[1].toString());
+          //System.out.println("getting quotient between " + rArray[0].toString() + " and " + rArray[1].toString());
           quotient = getQuotient(rArray[0], rArray[1], fieldPoly);
-          System.out.println("past getQuotient");
+          //System.out.println("past getQuotient");
           r_temp = rArray[0];
           rArray[0] = rArray[1];
           //System.out.println("quotient is: " + quotient.toString());

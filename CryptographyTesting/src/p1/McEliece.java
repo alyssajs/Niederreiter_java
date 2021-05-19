@@ -342,6 +342,20 @@ public class McEliece
       }
    }
 	
+   public static void print(gfPoly[][] array)
+   {
+      int rowIndex, columnIndex;
+      
+      for(rowIndex = 0; rowIndex < array.length; rowIndex++)
+      {
+         for(columnIndex = 0; columnIndex < array[0].length; columnIndex++)
+         {
+            System.out.print(array[rowIndex][columnIndex].toString() + " " );
+         }
+         
+         System.out.println();
+      }
+   }
 	public static int[][] multiply(int[][] matrix1, int[][] matrix2)
 	{
 		if(matrix1[0].length != matrix2.length)
@@ -369,6 +383,40 @@ public class McEliece
 
 					}
 				result[matrix1Row][matrix2Column] = result[matrix1Row][matrix2Column] % 2;
+				
+			}
+				
+		}
+				
+		return result;
+	}
+	public static gfPoly[][] multiply(gfPoly[][] matrix1, gfPoly[][] matrix2, gfPoly fieldPoly)
+	{
+		if(matrix1[0].length != matrix2.length)
+		{
+			return null; 
+		}
+		gfPoly[][] result = new gfPoly[matrix1.length][matrix2[0].length];
+				
+		
+		int matrix1Row, matrix2Column, iterIndex;
+		
+		for(matrix1Row = 0; matrix1Row < matrix1.length; matrix1Row++)
+		{
+			for(matrix2Column = 0; matrix2Column < matrix2[0].length;
+					matrix2Column++)
+			{
+				result[matrix1Row][matrix2Column] = new gfPoly(0);
+				for(iterIndex = 0; iterIndex < matrix2.length;
+						iterIndex++)
+					{
+					   result[matrix1Row][matrix2Column] = gfPoly.gf_add(result[matrix1Row][matrix2Column],
+							gfPoly.gf_multiply(matrix1[matrix1Row][iterIndex], matrix2[iterIndex][matrix2Column], 
+									fieldPoly)); 
+		
+
+					}
+
 				
 			}
 				
@@ -665,10 +713,9 @@ System.out.println("multiplying " + matrix[u][j] + " which is at " + u + ", " + 
        McEliece.numErrors = numErrors;
       irredPoly = Poly.getIrredPoly(numErrors, gF.gf_irredPoly);
       support = gF.getSupport(irredPoly, suppSize);
-      /*
+      
       System.out.println("support:");
       print(support);
-      */
 
       
 	   Poly[][] mat1 = new Poly[irredPoly.degree][irredPoly.degree];
